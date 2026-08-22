@@ -73,6 +73,7 @@ ADD https://github.com/snakemake/snakemake-wrappers/raw/v5.2.1/bio/multiqc/envir
 #     - conda-forge::r-gprofiler2=0.2.3
 #     - python=3.10.12
 #     - mageck=0.5.9
+#     - dotmatch=0.2.2
 #     - numpy<1.24
 #     - pandas=2.0.3
 #     - scipy=1.11.1

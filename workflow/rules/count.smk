@@ -29,61 +29,98 @@ if cram():
             "samtools fastq {input} 2> {log} | gzip -c > {output}"
 
 
-rule hisat2_index:
-    input:
-        fasta=fasta,
-    output:
-        multiext(
-            "resources/index/index",
-            ".1.ht2",
-            ".2.ht2",
-            ".3.ht2",
-            ".4.ht2",
-            ".5.ht2",
-            ".6.ht2",
-            ".7.ht2",
-            ".8.ht2",
-        ),
-    log:
-        "logs/hisat2/index.log",
-    threads: 4
-    resources:
-        runtime=30,
-    params:
-        extra="",
-        prefix=lambda wildcard, output: output[0].replace(".1.ht2", ""),
-    wrapper:
-        "v5.2.1/bio/hisat2/index"
+if config.get("count_method", "hisat2") == "dotmatch":
 
+    rule create_dotmatch_targets:
+        input:
+            csv=csv,
+        output:
+            targets="resources/dotmatch/targets.tsv",
+        log:
+            "logs/dotmatch/create_targets.log",
+        conda:
+            "../envs/stats.yaml"
+        script:
+            "../scripts/create_dotmatch_targets.py"
 
-rule count:
-    input:
-        fq="results/trimmed/{sample}.fastq.gz",
-        idx=multiext(
-            "resources/index/index",
-            ".1.ht2",
-            ".2.ht2",
-            ".3.ht2",
-            ".4.ht2",
-            ".5.ht2",
-            ".6.ht2",
-            ".7.ht2",
-            ".8.ht2",
-        ),
-    output:
-        "results/count/{sample}.guidecounts.txt",
-    log:
-        "logs/count/{sample}.log",
-    conda:
-        "../envs/stats.yaml"
-    threads: 6
-    resources:
-        runtime=45,
-    params:
-        mm=config["mismatch"],
-        idx=lambda wildcard, input: input.idx[0].replace(".1.ht2", ""),
-    script:
-        "../scripts/count.sh"
+    rule count:
+        input:
+            fq="results/trimmed/{sample}.fastq.gz",
+            targets="resources/dotmatch/targets.tsv",
+        output:
+            counts="results/count/{sample}.guidecounts.txt",
+            summary="results/qc/dotmatch/{sample}.summary.json",
+        log:
+            "logs/count/{sample}.log",
+        conda:
+            "../envs/stats.yaml"
+        threads: 6
+        resources:
+            runtime=45,
+        params:
+            target_start=config["dotmatch"]["target_start"],
+            target_length=config["dotmatch"]["target_length"],
+            ambiguity_policy=config["dotmatch"].get("ambiguity_policy", "radius"),
+            k=config["mismatch"],
+        script:
+            "../scripts/dotmatch_count.py"
+
+else:
+
+    rule hisat2_index:
+        input:
+            fasta=fasta,
+        output:
+            multiext(
+                "resources/index/index",
+                ".1.ht2",
+                ".2.ht2",
+                ".3.ht2",
+                ".4.ht2",
+                ".5.ht2",
+                ".6.ht2",
+                ".7.ht2",
+                ".8.ht2",
+            ),
+        log:
+            "logs/hisat2/index.log",
+        threads: 4
+        resources:
+            runtime=30,
+        params:
+            extra="",
+            prefix=lambda wildcard, output: output[0].replace(".1.ht2", ""),
+        wrapper:
+            "v5.2.1/bio/hisat2/index"
+
+    rule count:
+        input:
+            fq="results/trimmed/{sample}.fastq.gz",
+            idx=multiext(
+                "resources/index/index",
+                ".1.ht2",
+                ".2.ht2",
+                ".3.ht2",
+                ".4.ht2",
+                ".5.ht2",
+                ".6.ht2",
+                ".7.ht2",
+                ".8.ht2",
+            ),
+        output:
+            "results/count/{sample}.guidecounts.txt",
+        log:
+            "logs/count/{sample}.log",
+        conda:
+            "../envs/stats.yaml"
+        threads: 6
+        resources:
+            runtime=45,
+        params:
+            mm=config["mismatch"],
+            idx=lambda wildcard, input: input.idx[0].replace(".1.ht2", ""),
+        script:
+            "../scripts/count.sh"
 
 
 rule aggregate_counts:

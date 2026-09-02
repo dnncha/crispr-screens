@@ -30,7 +30,7 @@ stats:
     # KY_Library_v1.0 (https://doi.org/10.1016/j.celrep.2016.09.079)
     # KY_Library_v1.1 (https://doi.org/10.1016/j.celrep.2016.09.079)
     # MiniLibCas9_Library (https://doi.org/10.1186/s13059-021-02268-4)
-    # Whitehead_Library (https://doi.org/10.1038/science.aac7041)
+    # Whitehead_Library (https://doi.org/10.1126/science.aac7041)
     library_name: TKOv3
     min_reads: 10
 

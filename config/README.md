@@ -41,7 +41,12 @@ match more than one guide within the configured `mismatch` radius; `best` keeps
 the closest match. The DotMatch backend writes the same guide-count shape
 consumed by the downstream MAGeCK rules and also records a JSON assignment
 summary under `results/qc/dotmatch/`. DotMatch requires all guide sequences in
-the selected library to have the same length.
+the selected library to have the same length, so mixed-length libraries such as
+Bassik must be filtered to one window (usually the `cutadapt -l` length) before
+this backend can be selected.
+
+The stats environment pins `dotmatch=0.2.2`. The wrapper accepts both the
+documented `total_count` column and the 0.2.2 `{sample}_count_total` column.
 
 ### stats
 

@@ -30,6 +30,23 @@ if cram():
 
 
 if config.get("count_method", "hisat2") == "dotmatch":
+    if not isinstance(config.get("dotmatch"), dict):
+        raise ValueError(
+            "count_method: dotmatch requires a 'dotmatch' block with "
+            "target_start, target_length, and ambiguity_policy"
+        )
+    _missing_dotmatch = [
+        key
+        for key in ("target_start", "target_length", "ambiguity_policy")
+        if key not in config["dotmatch"]
+    ]
+    if _missing_dotmatch:
+        raise ValueError(
+            "count_method: dotmatch is missing required field(s): "
+            + ", ".join(_missing_dotmatch)
+        )
+    if "gene_column" not in config.get("csv", {}):
+        raise ValueError("count_method: dotmatch requires csv.gene_column")
 
     rule create_dotmatch_targets:
         input:
@@ -54,13 +71,13 @@ if config.get("count_method", "hisat2") == "dotmatch":
             "logs/count/{sample}.log",
         conda:
             "../envs/stats.yaml"
-        threads: 6
+        threads: 1
         resources:
             runtime=45,
         params:
             target_start=config["dotmatch"]["target_start"],
             target_length=config["dotmatch"]["target_length"],
-            ambiguity_policy=config["dotmatch"].get("ambiguity_policy", "radius"),
+            ambiguity_policy=config["dotmatch"]["ambiguity_policy"],
             k=config["mismatch"],
         script:
             "../scripts/dotmatch_count.py"

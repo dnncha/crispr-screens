@@ -209,6 +209,14 @@ discarded with `ambiguity_policy: radius`; `best` can be selected when the
 closest guide should be retained. Review the DotMatch summary before treating
 rescued counts as final results.
 
+DotMatch requires a fixed guide length. A configuration with
+`count_method: dotmatch` and no `dotmatch` block is rejected by the schema
+instead of failing later with a `KeyError`. The stats environment pins
+`dotmatch=0.2.2`; the count wrapper reads either the documented `total_count`
+column or the 0.2.2 `{sample}_count_total` column. Concordance against HISAT2
+on the public test FASTQs is recorded in
+`docs/dotmatch-hisat2-concordance.md`.
+
 
 BAGEL2 analysis
 ===============

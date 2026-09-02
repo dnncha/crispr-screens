@@ -25,6 +25,13 @@ selected["gene"] = selected["gene"].astype(str)
 
 if selected["target_id"].duplicated().any():
     raise ValueError("target_id values must be unique for DotMatch counting")
+duplicate_seqs = selected.loc[selected["target_seq"].duplicated(keep=False)]
+if not duplicate_seqs.empty:
+    examples = ", ".join(duplicate_seqs["target_id"].head(10).tolist())
+    raise ValueError(
+        "target_seq values must be unique for DotMatch counting; "
+        f"duplicated sequences include: {examples}"
+    )
 if (~selected["target_seq"].str.fullmatch(r"[ACGT]+", na=False)).any():
     raise ValueError("target_seq values must contain DNA bases A, C, G, or T")
 if selected["target_seq"].str.len().nunique() != 1:
